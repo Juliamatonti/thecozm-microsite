@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Cozm — AI-Powered Automation for Downstream Filings</title>
+  <style>
+    /* ── Password Overlay ── */
+    .password-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;
+      background: linear-gradient(170deg, #e8f7f7 0%, #fff 60%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .password-overlay.hidden { display: none; }
+    .password-box {
+      text-align: center; background: #fff; padding: 3rem;
+      border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+      max-width: 400px; width: 90%;
+    }
+    .password-box img { height: 60px; margin-bottom: 1.5rem; }
+    .password-box h2 { font-size: 1.3rem; margin-bottom: 0.5rem; color: #1e293b; }
+    .password-box p { font-size: 0.9rem; color: #64748b; margin-bottom: 1.5rem; }
+    .password-box input {
+      width: 100%; padding: 0.75rem 1rem; font-size: 1rem;
+      border: 2px solid #e2e8f0; border-radius: 8px; outline: none;
+      text-align: center; margin-bottom: 1rem; transition: border-color .2s;
+    }
+    .password-box input:focus { border-color: #4BBEC1; }
+    .password-box button {
+      width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: 600;
+      background: #4BBEC1; color: #fff; border: none; border-radius: 8px;
+      cursor: pointer; transition: background .2s;
+    }
+    .password-box button:hover { background: #3aa8ab; }
+    .password-error { color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
+    .site-content { display: none; }
+    .site-content.visible { display: block; }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #4BBEC1;
+      --primary-dark: #3aa8ab;
+      --primary-light: #e8f7f7;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --bg: #ffffff;
+      --bg-alt: #f8fafa;
+      --border: #e2e8f0;
+      --radius: 8px;
+      --red: #ef4444;
+      --green: #22c55e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ── Navigation ── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .nav-inner {
+      max-width: 1140px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .logo { display: flex; align-items: center; gap: 0.6rem; }
+    .logo img { height: 40px; width: auto; }
+    .logo span { font-size: 1.35rem; font-weight: 700; color: var(--primary); }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { font-size: 0.95rem; color: var(--text-light); transition: color .2s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn {
+      display: inline-block; padding: 0.6rem 1.4rem;
+      background: var(--primary); color: #fff; border: none;
+      border-radius: var(--radius); font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn:hover { background: var(--primary-dark); }
+    .btn-outline {
+      background: transparent; color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+    .btn-outline:hover { background: var(--primary); color: #fff; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 10rem 2rem 6rem;
+      text-align: center;
+      background: linear-gradient(170deg, var(--primary-light) 0%, var(--bg) 60%);
+    }
+    .hero-logo { height: 80px; margin-bottom: 1.5rem; }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800; line-height: 1.2;
+      max-width: 780px; margin: 0 auto 1.2rem;
+    }
+    .hero p {
+      font-size: 1.15rem; color: var(--text-light);
+      max-width: 600px; margin: 0 auto 2rem;
+    }
+    .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    /* ── Section utilities ── */
+    section { padding: 5rem 2rem; }
+    .container { max-width: 1140px; margin: 0 auto; }
+    .section-title {
+      text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 0.6rem;
+    }
+    .section-subtitle {
+      text-align: center; color: var(--text-light); margin-bottom: 3rem;
+      max-width: 600px; margin-left: auto; margin-right: auto;
+    }
+
+    /* ── Features ── */
+    #features { background: var(--bg-alt); }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    .feature-card {
+      background: #fff; padding: 2rem; border-radius: var(--radius);
+      border: 1px solid var(--border); transition: box-shadow .2s;
+    }
+    .feature-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--primary-light); display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1rem;
+    }
+    .feature-card h3 { font-size: 1.15rem; margin-bottom: 0.5rem; }
+    .feature-card p { color: var(--text-light); font-size: 0.95rem; }
+
+    /* ── How It Works ── */
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem; counter-reset: step;
+    }
+    .step { text-align: center; }
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--primary); color: #fff;
+      font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;
+    }
+    .step h3 { margin-bottom: 0.4rem; }
+    .step p { color: var(--text-light); font-size: 0.95rem; }
+
+    /* ── Pricing Comparison ── */
+    #pricing { background: var(--bg-alt); }
+    .comparison-table {
+      width: 100%; border-collapse: collapse; margin: 0 auto;
+      max-width: 960px; background: #fff; border-radius: var(--radius);
+      overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .comparison-table thead th {
+      padding: 1.2rem 1rem; font-size: 0.95rem; font-weight: 700;
+      text-align: center; border-bottom: 2px solid var(--border);
+      background: var(--bg-alt);
+    }
+    .comparison-table thead th:first-child { text-align: left; }
+    .comparison-table thead th.highlight {
+      background: var(--primary); color: #fff; font-size: 1.05rem;
+    }
+    .comparison-table tbody td {
+      padding: 1rem; text-align: center; border-bottom: 1px solid var(--border);
+      font-size: 0.95rem; color: var(--text-light);
+    }
+    .comparison-table tbody td:first-child {
+      text-align: left; font-weight: 600; color: var(--text);
+    }
+    .comparison-table tbody td.highlight {
+      background: rgba(75, 190, 193, 0.05); font-weight: 600; color: var(--text);
+    }
+    .comparison-table tbody tr:last-child td { border-bottom: none; }
+    .check { color: var(--green); font-weight: 700; font-size: 1.2rem; }
+    .cross { color: var(--red); font-weight: 700; font-size: 1.2rem; }
+    .price-highlight {
+      font-size: 1.6rem; font-weight: 800; color: var(--primary);
+    }
+    .price-competitor {
+      font-size: 1rem; font-weight: 600; color: var(--text-light);
+    }
+    .savings-badge {
+      display: inline-block; background: #dcfce7; color: #166534;
+      font-size: 0.85rem; font-weight: 700; padding: 0.3rem 0.8rem;
+      border-radius: 999px; margin-top: 1.5rem;
+    }
+    .pricing-note {
+      text-align: center; margin-top: 2rem; color: var(--text-light); font-size: 0.9rem;
+    }
+
+    @media (max-width: 640px) {
+      .comparison-table { font-size: 0.85rem; }
+      .comparison-table thead th, .comparison-table tbody td { padding: 0.7rem 0.5rem; }
+    }
+
+    /* ── Calculator ── */
+    .calculator-wrapper {
+      max-width: 640px; margin: 0 auto;
+      background: #fff; border-radius: var(--radius);
+      border: 1px solid var(--border); padding: 2.5rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .calc-input-group { margin-bottom: 2rem; text-align: center; }
+    .calc-input-group label {
+      display: block; font-weight: 600; margin-bottom: 0.6rem; font-size: 1.05rem;
+    }
+    .calc-input-group input {
+      width: 160px; padding: 0.8rem 1rem; font-size: 1.4rem; font-weight: 700;
+      text-align: center; border: 2px solid var(--border); border-radius: var(--radius);
+      outline: none; transition: border-color .2s;
+    }
+    .calc-input-group input:focus { border-color: var(--primary); }
+    .calc-results {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .calc-card {
+      text-align: center; padding: 1.5rem; border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .calc-card.cozm-card { border-color: var(--primary); background: rgba(75,190,193,0.05); }
+    .calc-card .calc-label { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.3rem; }
+    .calc-card .calc-amount { font-size: 2rem; font-weight: 800; }
+    .calc-card.cozm-card .calc-amount { color: var(--primary); }
+    .calc-card.big4-card .calc-amount { color: var(--text-light); }
+    .calc-savings {
+      text-align: center; padding: 1.2rem; border-radius: var(--radius);
+      background: #dcfce7;
+    }
+    .calc-savings .calc-savings-amount {
+      font-size: 2.2rem; font-weight: 800; color: #166534;
+    }
+    .calc-savings .calc-savings-label {
+      font-size: 0.9rem; color: #166534; font-weight: 600;
+    }
+
+    /* ── Testimonials ── */
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    .testimonial {
+      background: var(--bg-alt); padding: 2rem; border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .testimonial p { font-style: italic; margin-bottom: 1rem; }
+    .testimonial-author { font-weight: 600; font-size: 0.95rem; }
+    .testimonial-role { font-size: 0.85rem; color: var(--text-light); }
+
+    /* ── CTA ── */
+    .cta {
+      background: var(--primary); color: #fff; text-align: center;
+      padding: 5rem 2rem; border-radius: 0;
+    }
+    .cta h2 { font-size: 2rem; margin-bottom: 0.6rem; }
+    .cta p { opacity: 0.9; margin-bottom: 2rem; max-width: 520px; margin-left: auto; margin-right: auto; }
+    .cta .btn { background: #fff; color: var(--primary); }
+    .cta .btn:hover { background: #f1f5f9; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 2rem; background: var(--text); color: #94a3b8;
+      font-size: 0.9rem;
+    }
+    .footer-inner {
+      max-width: 1140px; margin: 0 auto;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { color: #94a3b8; transition: color .2s; }
+    .footer-links a:hover { color: #fff; }
+
+    /* ── Mobile nav ── */
+    .menu-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+    @media (max-width: 768px) {
+      .nav-links { display: none; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: #fff; padding: 1rem 2rem; border-bottom: 1px solid var(--border); gap: 1rem; }
+      .nav-links.open { display: flex; }
+      .menu-toggle { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Password Gate -->
+  <div class="password-overlay" id="passwordOverlay">
+    <div class="password-box">
+      <img src="logo.png" alt="The Cozm">
+      <h2>Welcome to The Cozm</h2>
+      <p>Enter the password to access this site.</p>
+      <input type="password" id="passwordInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPassword()">
+      <button onclick="checkPassword()">Enter</button>
+      <div class="password-error" id="passwordError">Incorrect password. Please try again.</div>
+    </div>
+  </div>
+
+  <div class="site-content" id="siteContent">
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <img src="logo.png" alt="The Cozm">
+        <span>The Cozm</span>
+      </a>
+      <button class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">&#9776;</button>
+      <div class="nav-links">
+        <a href="#features">Services</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#calculator">Calculator</a>
+        <a href="#testimonials">Testimonials</a>
+        <a href="#cta" class="btn">Get in Touch</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <img src="logo.png" alt="The Cozm" class="hero-logo">
+    <h1>AI-Powered Downstream Filings at a Fraction of the Cost</h1>
+    <p>The Cozm uses intelligent automation to deliver fast, accurate downstream filings &mdash; saving you up to 60% compared to the Big Four.</p>
+    <div class="hero-buttons">
+      <a href="#cta" class="btn">Get a Quote</a>
+      <a href="#pricing" class="btn btn-outline">See Pricing Comparison</a>
+    </div>
+  </section>
+
+  <!-- Features / Services -->
+  <section id="features">
+    <div class="container">
+      <h2 class="section-title">Why Choose The Cozm</h2>
+      <p class="section-subtitle">We combine AI automation with expert oversight to deliver faster, more affordable filing services.</p>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">&#9889;</div>
+          <h3>AI-Powered Processing</h3>
+          <p>Our intelligent automation handles data extraction, validation, and filing preparation in a fraction of the time.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128176;</div>
+          <h3>60% Cost Savings</h3>
+          <p>At &pound;200 per downstream filing, you save thousands compared to traditional Big Four firms.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128202;</div>
+          <h3>Real-Time Tracking</h3>
+          <p>Monitor the status of every filing in real time with a transparent dashboard and automated notifications.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128274;</div>
+          <h3>Compliance Guaranteed</h3>
+          <p>Every filing is reviewed for regulatory compliance with built-in checks and expert quality assurance.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#127919;</div>
+          <h3>Fast Turnaround</h3>
+          <p>Automated workflows mean filings are completed in hours, not weeks. Meet every deadline with confidence.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128101;</div>
+          <h3>Dedicated Support</h3>
+          <p>A named account manager ensures your filings are handled with care and any questions answered promptly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Getting started with The Cozm is simple and seamless.</p>
+      <div class="steps">
+        <div class="step">
+          <h3>Share Your Requirements</h3>
+          <p>Tell us about your downstream filing needs, jurisdictions, and timelines. We'll tailor a plan for you.</p>
+        </div>
+        <div class="step">
+          <h3>We Automate &amp; File</h3>
+          <p>Our AI processes your data, prepares the filings, and our experts review everything before submission.</p>
+        </div>
+        <div class="step">
+          <h3>Track &amp; Confirm</h3>
+          <p>Monitor every filing in real time. Receive confirmation once each filing is accepted and completed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Comparison -->
+  <section id="pricing">
+    <div class="container">
+      <h2 class="section-title">Pricing Comparison</h2>
+      <p class="section-subtitle">See how The Cozm stacks up against the Big Four firms for downstream filings.</p>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="highlight">The Cozm</th>
+            <th>Big 4</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Price per A1/Certificate of Coverage or Posted Worker Notification Filing</td>
+            <td class="highlight"><span class="price-highlight">&pound;200</span></td>
+            <td><span class="price-competitor">&pound;500</span></td>
+          </tr>
+          <tr>
+            <td>AI-Powered Automation</td>
+            <td class="highlight"><span class="check">&#10003;</span></td>
+            <td><span class="cross">&#10007;</span></td>
+          </tr>
+          <tr>
+            <td>Average Turnaround</td>
+            <td class="highlight"><strong>60 seconds</strong></td>
+            <td>2&ndash;4 weeks</td>
+          </tr>
+          <tr>
+            <td>Real-Time Tracking</td>
+            <td class="highlight"><span class="check">&#10003;</span></td>
+            <td><span class="cross">&#10007;</span></td>
+          </tr>
+          <tr>
+            <td>Dedicated Account Manager</td>
+            <td class="highlight"><span class="check">&#10003;</span></td>
+            <td><span class="check">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>Compliance Review</td>
+            <td class="highlight"><span class="check">&#10003;</span></td>
+            <td><span class="check">&#10003;</span></td>
+          </tr>
+          <tr>
+            <td>Transparent Flat Pricing</td>
+            <td class="highlight"><span class="check">&#10003;</span></td>
+            <td><span class="cross">&#10007;</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="text-align:center; margin-top: 2rem;">
+        <span class="savings-badge">Save up to 60% per filing with The Cozm</span>
+      </div>
+      <p class="pricing-note">Big Four pricing is estimated based on typical market rates for downstream filing services. Actual fees may vary.</p>
+    </div>
+  </section>
+
+  <!-- Savings Calculator -->
+  <section id="calculator">
+    <div class="container">
+      <h2 class="section-title">Calculate Your Savings</h2>
+      <p class="section-subtitle">Enter your annual filing volume to see how much you could save with The Cozm.</p>
+      <div class="calculator-wrapper">
+        <div class="calc-input-group">
+          <label for="filingVolume">Number of filings per year</label>
+          <input type="number" id="filingVolume" min="1" value="100" oninput="updateCalc()">
+        </div>
+        <div class="calc-results">
+          <div class="calc-card cozm-card">
+            <div class="calc-label">The Cozm</div>
+            <div class="calc-amount" id="cozmCost">&pound;20,000</div>
+          </div>
+          <div class="calc-card big4-card">
+            <div class="calc-label">Big 4</div>
+            <div class="calc-amount" id="big4Cost">&pound;50,000</div>
+          </div>
+        </div>
+        <div class="calc-savings">
+          <div class="calc-savings-label">Your annual savings</div>
+          <div class="calc-savings-amount" id="savingsAmount">&pound;30,000</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function updateCalc() {
+      var volume = parseInt(document.getElementById('filingVolume').value) || 0;
+      var cozmPrice = 200;
+      var big4Price = 500;
+      var cozmTotal = volume * cozmPrice;
+      var big4Total = volume * big4Price;
+      var savings = big4Total - cozmTotal;
+      document.getElementById('cozmCost').textContent = '\u00A3' + cozmTotal.toLocaleString('en-GB');
+      document.getElementById('big4Cost').textContent = '\u00A3' + big4Total.toLocaleString('en-GB');
+      document.getElementById('savingsAmount').textContent = '\u00A3' + savings.toLocaleString('en-GB');
+    }
+  </script>
+
+  <!-- Testimonials -->
+  <section id="testimonials">
+    <div class="container">
+      <h2 class="section-title">Trusted by Forward-Thinking Teams</h2>
+      <p class="section-subtitle">See why companies are switching from the Big Four to The Cozm.</p>
+      <div class="testimonials-grid">
+        <div class="testimonial">
+          <p>"We cut our downstream filing costs by 75% after switching to The Cozm. The turnaround time is incredible."</p>
+          <div class="testimonial-author">Legal Operations Director</div>
+          <div class="testimonial-role">Global Investment Firm</div>
+        </div>
+        <div class="testimonial">
+          <p>"The real-time tracking alone is worth it. We no longer chase status updates &mdash; everything is visible in one dashboard."</p>
+          <div class="testimonial-author">Head of Compliance</div>
+          <div class="testimonial-role">Multinational Corporation</div>
+        </div>
+        <div class="testimonial">
+          <p>"Same quality as the Big Four at a fraction of the price. The Cozm's AI automation is a game changer for our team."</p>
+          <div class="testimonial-author">Company Secretary</div>
+          <div class="testimonial-role">FTSE 250 Company</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta" class="cta">
+    <h2>Ready to Cut Your Filing Costs?</h2>
+    <p>Get in touch today and see how The Cozm can handle your downstream filings faster and for a fraction of the cost.</p>
+    <a href="#" class="btn">Get a Quote</a>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div>&copy; 2026 The Cozm. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  </div><!-- /site-content -->
+
+  <script>
+    function checkPassword() {
+      var input = document.getElementById('passwordInput').value;
+      if (input === 'Cozm4eva') {
+        document.getElementById('passwordOverlay').classList.add('hidden');
+        document.getElementById('siteContent').classList.add('visible');
+      } else {
+        document.getElementById('passwordError').style.display = 'block';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordInput').focus();
+      }
+    }
+    document.getElementById('passwordInput').focus();
+  </script>
+
+</body>
+</html>
