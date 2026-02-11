@@ -262,6 +262,30 @@
     .testimonial-author { font-weight: 600; font-size: 0.95rem; }
     .testimonial-role { font-size: 0.85rem; color: var(--text-light); }
 
+    /* ── FAQ ── */
+    #faq { background: var(--bg-alt); }
+    .faq-list { max-width: 760px; margin: 0 auto; }
+    .faq-item {
+      background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 1rem; overflow: hidden;
+    }
+    .faq-question {
+      width: 100%; padding: 1.2rem 1.5rem; font-size: 1.05rem; font-weight: 600;
+      text-align: left; background: none; border: none; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--text); transition: color .2s;
+    }
+    .faq-question:hover { color: var(--primary); }
+    .faq-arrow {
+      font-size: 1.2rem; transition: transform .3s; flex-shrink: 0; margin-left: 1rem;
+    }
+    .faq-item.open .faq-arrow { transform: rotate(180deg); }
+    .faq-answer {
+      max-height: 0; overflow: hidden; transition: max-height .3s ease;
+      padding: 0 1.5rem; color: var(--text-light); font-size: 0.95rem; line-height: 1.7;
+    }
+    .faq-item.open .faq-answer { max-height: 300px; padding: 0 1.5rem 1.2rem; }
+
     /* ── CTA ── */
     .cta {
       background: var(--primary); color: #fff; text-align: center;
@@ -324,6 +348,7 @@
         <a href="#pricing">Pricing</a>
         <a href="#calculator">Calculator</a>
         <a href="#testimonials">Testimonials</a>
+        <a href="#faq">FAQ</a>
         <a href="#cta" class="btn">Get in Touch</a>
       </div>
     </div>
@@ -528,6 +553,65 @@
       </div>
     </div>
   </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="container">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-subtitle">Everything you need to know about The Cozm's filing services.</p>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            What is a downstream filing?
+            <span class="faq-arrow">&#9662;</span>
+          </button>
+          <div class="faq-answer">A downstream filing refers to an A1/Certificate of Coverage or Posted Worker Notification that must be submitted when employees are assigned to work in another country. These filings ensure compliance with local social security and labour regulations.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            How does The Cozm achieve a 60-second turnaround?
+            <span class="faq-arrow">&#9662;</span>
+          </button>
+          <div class="faq-answer">Our AI-powered platform automates the entire filing preparation process &mdash; from data extraction and validation to form completion. What traditionally takes weeks of manual work is handled instantly by our intelligent automation, with expert oversight to ensure accuracy.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            How can you charge &pound;200 when the Big 4 charge &pound;500?
+            <span class="faq-arrow">&#9662;</span>
+          </button>
+          <div class="faq-answer">Our AI automation eliminates the manual, labour-intensive processes that drive up costs at traditional firms. By automating the bulk of the work and applying expert review only where it matters, we pass the savings directly to our clients without compromising on quality.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Is the quality of filings comparable to the Big 4?
+            <span class="faq-arrow">&#9662;</span>
+          </button>
+          <div class="faq-answer">Absolutely. Every filing goes through automated compliance checks and is reviewed by experienced professionals. Our clients receive the same level of accuracy and regulatory compliance they would expect from a Big 4 firm &mdash; just faster and at a fraction of the cost.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Which countries and jurisdictions do you cover?
+            <span class="faq-arrow">&#9662;</span>
+          </button>
+          <div class="faq-answer">The Cozm supports downstream filings across a wide range of jurisdictions globally. Contact us to discuss your specific country requirements and we'll confirm coverage for your needs.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            How do I get started?
+            <span class="faq-arrow">&#9662;</span>
+          </button>
+          <div class="faq-answer">Simply click &ldquo;Get a Quote&rdquo; and share your filing requirements. We'll set you up with a dedicated account manager and have your first filings processed in no time.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function toggleFaq(btn) {
+      var item = btn.parentElement;
+      item.classList.toggle('open');
+    }
+  </script>
 
   <!-- CTA -->
   <section id="cta" class="cta">
